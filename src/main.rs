@@ -28,7 +28,7 @@ fn main() {
         
         let compute_score = compute_score(game_guess_count, max_authorized_guesses, &game_difficulty);
         
-        println!("Score: {} + {} -> {}", score, compute_score, score + compute_score);
+        println!("Score: {} ({} + {})", score + compute_score, score, compute_score);
 
         score += compute_score;
         
@@ -80,12 +80,11 @@ fn choose_a_difficulty_menu() -> Difficulty {
             .read_line(&mut user_choice)
             .expect("Failed to read line");
 
-        let result = user_choice.trim().parse();
-        if result.is_err() {
-            continue;
-        }
+        let user_choice: u32 = match user_choice.trim().parse() {
+            Ok(num) => num,
+            Err(_) => continue
+        };
 
-        let user_choice: u32 = result.unwrap();
         let difficulty =  match user_choice {
             1 => Difficulty::Easy,
             2 => Difficulty::Medium,
@@ -108,13 +107,33 @@ fn start_guess_game(max_guesses: u32, max_rand_range: u32) -> u32 {
             print!("{} guess(es) left. ", max_guesses - guess_count);
             
             if has_reached_max_guess(max_guesses, guess_count) {
-                println!("You lose! You guessed too many guesses :(");
-                return guess_count;
+                break;
             }
         }
+
+        let guess = ask_guess(max_rand_range);
+        guess_count += 1;
         
+        print!("You guessed: {guess}. ");
+        match guess.cmp(&secret_number) {
+            Ordering::Less => println!("This is too small!"),
+            Ordering::Greater => println!("This is too big!"),
+            Ordering::Equal => {
+                println!("You win in {} guesses!", guess_count);
+                return guess_count;
+            },
+        }
+    }
+
+    println!("You lose! You guessed too many guesses :(");
+    return guess_count;
+}
+
+fn ask_guess(max_rand_range: u32) -> u32 {
+    loop {
         println!("Guess the secret number between 1 & {}", max_rand_range);
         print!("Your guess : ");
+        io::stdout().flush().expect("Failed to write");
 
         let mut guess = String::new();
 
@@ -122,25 +141,14 @@ fn start_guess_game(max_guesses: u32, max_rand_range: u32) -> u32 {
             .read_line(&mut guess)
             .expect("Failed to read line");
 
-        let result = guess.trim().parse();
-        if result.is_err() {
-            continue;
-        }
-
-        let guess: u32 = result.unwrap();
-
-        println!("You guessed: {}", guess);
-        guess_count += 1;
-
-        match guess.cmp(&secret_number) {
-            Ordering::Less => println!("Too small!"),
-            Ordering::Greater => println!("Too big!"),
-            Ordering::Equal => break,
-        }
+        match guess.trim().parse() {
+            Ok(num) => return num,
+            Err(_) => {
+                println!("Please enter a valid number");
+                continue;
+            }
+        };
     }
-
-    println!("You win in {} guesses!", guess_count);
-    guess_count
 }
 
 fn has_max_guess_defined(max_guesses: u32) -> bool {
@@ -180,6 +188,11 @@ fn get_max_authorized_guesses(difficulty: &Difficulty) -> u32 {
 }
 
 fn compute_score(guess_count: u32, max_authorized_guesses: u32, game_difficulty: &Difficulty) -> u32 {
+    // If user can make infinite guesses, return a fixed score.
+    if (max_authorized_guesses == INFINITE_GUESSES) {
+        return SCORE_PER_GUESS_POINT;
+    }
+    
     let score = (max_authorized_guesses - guess_count) * SCORE_PER_GUESS_POINT;
     
     match game_difficulty {
