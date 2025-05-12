@@ -7,9 +7,9 @@ Rust book guessing game improved with my ideas.
 - [x] Guess limitation difficulties
 - [x] scoring system
 - [x] repeating games
+- [x] main menu
 
 ## TODO
-- [ ] main menu
 - [ ] (Maybe) split into classes
 
 ## How to run
