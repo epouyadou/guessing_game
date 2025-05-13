@@ -48,7 +48,7 @@ fn display_main_menu() {
 
         match user_choice {
             1 => run_game(&game_difficulty, &guess_difficulty),
-            2 => display_settings(&mut game_difficulty, &mut guess_difficulty),
+            2 => display_settings_menu(&mut game_difficulty, &mut guess_difficulty),
             3 => break,
             _ => {
                 println!("Your option is invalid");
@@ -115,7 +115,7 @@ fn print_game_settings(selected_game_difficulty: &Difficulty, selected_guess_dif
     println!("  -> Secret number randomly selected between 1 and {} (default: 1 and {})", current_max_rand_range, get_default_max_rand_range(&selected_game_difficulty));
     
     println!("Selected Guess Difficulty: {}", get_difficulty_name(&selected_guess_difficulty));
-    if (*selected_guess_difficulty == Difficulty::Easy) {
+    if *selected_guess_difficulty == Difficulty::Easy {
         println!("  -> Infinite number of guess)");
     } else {
         println!("  -> {} guesses", get_max_authorized_guesses(&selected_guess_difficulty))
@@ -123,7 +123,7 @@ fn print_game_settings(selected_game_difficulty: &Difficulty, selected_guess_dif
     println!("==========================================================================================");
 }
 
-fn display_settings(selected_game_difficulty: &mut Difficulty, selected_guess_difficulty: &mut Difficulty) {
+fn display_settings_menu(selected_game_difficulty: &mut Difficulty, selected_guess_difficulty: &mut Difficulty) {
     loop {
         clear_screen();
         println!("Settings: ");
